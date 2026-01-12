@@ -16,7 +16,7 @@ Tous droits réservés.
 
 Module de gestion des cases
 """
-import const
+from bot_ia import const
 
 
 def Case(mur=False, couleur=' ', objet=const.AUCUN, joueurs_presents=None):
