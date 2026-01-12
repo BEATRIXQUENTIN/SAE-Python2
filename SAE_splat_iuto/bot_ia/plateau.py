@@ -449,11 +449,11 @@ def distances_objets_joueurs(plateau, pos, distance_max):
 
         if not case.est_mur(get_case((pos[0], pos[1] + 1))):
             prochaines.append((pos[0], pos[1] + 1))
-        elif not case.est_mur(get_case((pos[0], pos[1] - 1))):
+        if not case.est_mur(get_case((pos[0], pos[1] - 1))):
             prochaines.append((pos[0], pos[1] - 1))
-        elif not case.est_mur(get_case((pos[0] + 1, pos[1]))):
+        if not case.est_mur(get_case((pos[0] + 1, pos[1]))):
             prochaines.append((pos[0] + 1, pos[1]))
-        elif not case.est_mur(get_case((pos[0] - 1, pos[1]))):
+        if not case.est_mur(get_case((pos[0] - 1, pos[1]))):
             prochaines.append((pos[0] - 1, pos[1]))
 
         case_actuelle = get_case(plateau, pos)
@@ -463,7 +463,7 @@ def distances_objets_joueurs(plateau, pos, distance_max):
         if len(joueur) != 0:
             if not nb in res:
                 res[nb] = set()
-            res[nb].add(joueur)
+            res[nb] += (joueur)
         elif objet != 0:
             if not nb in res:
                 res[nb] = set()
@@ -472,4 +472,3 @@ def distances_objets_joueurs(plateau, pos, distance_max):
         nb += 1
     
     return res
-            
