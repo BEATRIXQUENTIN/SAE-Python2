@@ -377,7 +377,7 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
 
     while nb_parcours < distance_max and 0 <= pos[0] < get_nb_lignes(plateau) and 0 <= pos[1] < get_nb_colonnes(plateau) and not case.est_mur(case_actuelle) and not stop:
 
-        nb_joueurs += len(case_actuelle['joueurs_presents'])
+        nb_joueurs += case.get_nb_joueurs(case_actuelle)
         nb_parcours += 1
 
         if direction == 'E':
@@ -417,6 +417,5 @@ def distances_objets_joueurs(plateau, pos, distance_max):
 
     for ligne in range(nb_lignes):
         for colonne in range(nb_colonnes):
-            # plein de truc chiant 
             pass
-    #return dico_distance
+    return dico_distance
