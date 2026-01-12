@@ -1,5 +1,27 @@
-{'nb_lignes': 4, 'nb_colonnes': 6, 'les_valeurs': [{'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': 'B', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': {'A'}}, {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': {'B'}}, {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}]}
-
-
-
-https://prod.liveshare.vsengsaas.visualstudio.com/join?12EF04C06CA3AE2B0BC52113CB39FA8869C8
+{'nb_lignes': 4, 'nb_colonnes': 6, 'les_valeurs':
+[
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': 'B', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': {'A'}}, 
+    {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': False, 'couleur': ' ', 'objet': 0, 'joueurs_presents': {'B'}}, 
+    {'mur': False, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': 'A', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}, 
+    {'mur': True, 'couleur': ' ', 'objet': 0, 'joueurs_presents': set()}
+]}
