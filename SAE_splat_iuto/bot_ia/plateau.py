@@ -17,8 +17,7 @@ Tous droits réservés.
 module de gestion du plateau de jeu
 
 """
-import const
-import case
+from bot_ia import case
 
 
 # dictionnaire permettant d'associer une direction et la position relative
@@ -79,7 +78,7 @@ def poser_objet(plateau, objet, pos):
 
     Args:
         plateau (dict): le plateau considéré
-        objet (int): un entier représentant l'objet. const.AUCUN indique aucun objet
+        objet (int): un entier représentant l'objet. case.const.AUCUN indique aucun objet
         pos (tuple): une paire (lig,col) de deux int
     """
     case.poser_objet(get_case(plateau, pos), objet)
@@ -170,7 +169,7 @@ def enlever_joueur(plateau, joueur, pos):
 
 def prendre_objet(plateau, pos):
     """Prend l'objet qui se trouve en position pos du plateau et retourne l'entier
-        représentant cet objet. const.AUCUN indique qu'aucun objet se trouve sur case
+        représentant cet objet. case.const.AUCUN indique qu'aucun objet se trouve sur case
 
     Args:
         plateau (dict): Le plateau considéré
@@ -178,7 +177,7 @@ def prendre_objet(plateau, pos):
 
     Returns:
         int: l'entier représentant l'objet qui se trouvait sur la case.
-        const.AUCUN indique aucun objet
+        case.const.AUCUN indique aucun objet
     """
     return case.prendre_objet(get_case(plateau, pos))
 
@@ -312,7 +311,16 @@ def surfaces_peintes(plateau, nb_joueurs):
         dict: un dictionnaire dont les clées sont les identifiants joueurs et les
             valeurs le nombre de cases peintes par le joueur
     """
-    ...
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    dico_joueur = {}
+    for i in range(nb_joueurs):
+        dico_joueur[alphabet[i]] = 0 #On met une lettre pour un joueur
+    for case in plateau['les_valeurs']: 
+        couleur = case['couleur']
+        if couleur != ' ':
+            dico_joueur[couleur] +=1
+    return dico_joueur
+            
 
 def directions_possibles(plateau,pos):
     """ retourne les directions vers où il est possible de se déplacer à partir
@@ -327,7 +335,23 @@ def directions_possibles(plateau,pos):
               de la case d'arrivée si on prend cette direction
               à partir de pos
     """
-    ...
+    dico_dir_cl = {}  #dictionnaire directions couleur
+    ligne, colonne = pos
+    nb_lignes = get_nb_lignes(plateau)
+    nb_colonnes = get_nb_colonnes(plateau)
+    
+    for direction, (dirl, dirc) in INC_DIRECTION.items(): #direction ligne/colonne dirl dirc
+        if direction == 'X': #pos X TU BOUGES PAS
+            pass
+    
+    nouvelle_pos = (ligne + dirl, colonne + dirc)
+    
+    if 0 <= nouvelle_pos[0] < nb_lignes and 0 < nouvelle_pos[1] <= nb_colonnes: #si c'est dans le plateau
+        la_case = get_case(plateau, nouvelle_pos)
+        if not case.est_mur(la_case):
+            dico_dir_cl[direction] = case.get_couleur(la_case)
+        return dico_dir_cl
+        
 
 def nb_joueurs_direction(plateau, pos, direction, distance_max):
     """indique combien de joueurs se trouve à portée sans protection de mur.
@@ -340,10 +364,33 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     Returns:
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
-    ...
+    nb_joueurs = 0
+    nb_parcours = 1
+    if direction == 'E':
+        parcours = 1
+    elif direction == 'O':
+        parcours = -1
+    elif direction == 'S':
+        parcours = get_nb_colonnes(plateau)
+    elif direction == 'N':
+        parcours = -get_nb_colonnes(plateau)
+    position = pos[0]*get_nb_colonnes(plateau)+pos[1]
+
+    mur = False
+
+    while nb_parcours < distance_max and 0 < position < len(plateau['les_valeurs']) and not mur:
+
+        mur = plateau['les_valeurs'][position]['mur']
+
+        nb_joueurs += len(plateau['les_valeurs'][position]['joueurs_presents'])
+        nb_parcours += 1
+
+        position = position + parcours
+    return nb_joueurs
+
 
 def distances_objets_joueurs(plateau, pos, distance_max):
-    """calcul les distances entre la position pos est les différents objets et
+    """calcul les distances entre la position pos entre les différents objets et
         joueurs du plateau en se limitant à la distance max.
 
     Args:
@@ -355,4 +402,14 @@ def distances_objets_joueurs(plateau, pos, distance_max):
             contenant à la fois des objets et des joueurs. Attention le dictionnaire ne doit contenir
             des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
     """ 
-    ...
+    dico_distance = {}
+    ligne, colonne = pos
+    nb_lignes = get_nb_lignes(plateau)
+    nb_colonnes = get_nb_colonnes(plateau)
+
+    for ligne in range(nb_lignes):
+        for colonne in range(nb_colonnes):
+            # plein de truc chiant 
+            pass
+    #return dico_distance
+    
