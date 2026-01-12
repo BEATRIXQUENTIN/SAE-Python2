@@ -356,15 +356,3 @@ def distances_objets_joueurs(plateau, pos, distance_max):
             des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
     """ 
     ...
-
-
-plateau1=  "4;6\n"+\
-        "#  b# \n"+\
-        "  A## \n"+\
-        "##A   \n"+\
-        "  Aa##\n"+\
-        "2\nA;1;1\nB;3;1\n"+\
-        "0\n"
-
-
-print(plateau_from_str(plateau1))
