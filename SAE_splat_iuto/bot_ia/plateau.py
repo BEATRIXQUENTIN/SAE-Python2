@@ -335,23 +335,27 @@ def directions_possibles(plateau,pos):
               de la case d'arrivée si on prend cette direction
               à partir de pos
     """
-    dico_dir_cl = {}  #dictionnaire directions couleur
+    dico_dir_cl = {}
     ligne, colonne = pos
     nb_lignes = get_nb_lignes(plateau)
     nb_colonnes = get_nb_colonnes(plateau)
-    
-    for direction, (dirl, dirc) in INC_DIRECTION.items(): #direction ligne/colonne dirl dirc
-        if direction == 'X': #pos X TU BOUGES PAS
-            pass
-    
-    nouvelle_pos = (ligne + dirl, colonne + dirc)
-    
-    if 0 <= nouvelle_pos[0] < nb_lignes and 0 < nouvelle_pos[1] <= nb_colonnes: #si c'est dans le plateau
-        la_case = get_case(plateau, nouvelle_pos)
-        if not case.est_mur(la_case):
-            dico_dir_cl[direction] = case.get_couleur(la_case)
-        return dico_dir_cl
+
+    for direction, (dirl, dirc) in INC_DIRECTION.items():
+
+        if direction != 'X':
         
+
+            nouvelle_pos = (ligne + dirl, colonne + dirc)
+
+            
+            if 0 <= nouvelle_pos[0] < nb_lignes and 0 <= nouvelle_pos[1] < nb_colonnes:
+                la_case = get_case(plateau, nouvelle_pos)
+
+                if not case.est_mur(la_case):
+                    dico_dir_cl[direction] = case.get_couleur(la_case)
+
+    return dico_dir_cl
+
 
 def nb_joueurs_direction(plateau, pos, direction, distance_max):
     """indique combien de joueurs se trouve à portée sans protection de mur.
@@ -365,27 +369,31 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
     nb_joueurs = 0
-    nb_parcours = 1
-    if direction == 'E':
-        parcours = 1
-    elif direction == 'O':
-        parcours = -1
-    elif direction == 'S':
-        parcours = get_nb_colonnes(plateau)
-    elif direction == 'N':
-        parcours = -get_nb_colonnes(plateau)
-    position = pos[0]*get_nb_colonnes(plateau)+pos[1]
+    nb_parcours = 0
 
-    mur = False
+    stop = False
 
-    while nb_parcours < distance_max and 0 < position < len(plateau['les_valeurs']) and not mur:
+    case_actuelle = get_case(plateau, pos)
 
-        mur = plateau['les_valeurs'][position]['mur']
+    while nb_parcours < distance_max and 0 <= pos[0] < get_nb_lignes(plateau) and 0 <= pos[1] < get_nb_colonnes(plateau) and not case.est_mur(case_actuelle) and not stop:
 
-        nb_joueurs += len(plateau['les_valeurs'][position]['joueurs_presents'])
+        nb_joueurs += len(case_actuelle['joueurs_presents'])
         nb_parcours += 1
 
-        position = position + parcours
+        if direction == 'E':
+            pos = (pos[0], pos[1] + 1)
+        elif direction == 'O':
+            pos = (pos[0], pos[1] - 1)
+        elif direction == 'S':
+            pos = (pos[0] + 1, pos[1])
+        elif direction == 'N':
+            pos = (pos[0] - 1, pos[1])
+            
+        try:
+            case_actuelle = get_case(plateau, pos)
+        except:
+            stop = True
+        
     return nb_joueurs
 
 
@@ -412,4 +420,3 @@ def distances_objets_joueurs(plateau, pos, distance_max):
             # plein de truc chiant 
             pass
     #return dico_distance
-    
