@@ -419,3 +419,57 @@ def distances_objets_joueurs(plateau, pos, distance_max):
         for colonne in range(nb_colonnes):
             pass
     return dico_distance
+
+
+
+
+
+
+
+def distances_objets_joueurs(plateau, pos, distance_max):
+    """calcul les distances entre la position pos entre les différents objets et
+        joueurs du plateau en se limitant à la distance max.
+
+    Args:
+        plateau (dict): le plateau considéré
+        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
+        distance_max (int): un entier indiquant la distance limite de la recherche
+    Returns:
+        dict: un dictionnaire dont les clés sont des distances et les valeurs sont des ensembles
+            contenant à la fois des objets et des joueurs. Attention le dictionnaire ne doit contenir
+            des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
+    """
+    res = dict()
+    nb = 0
+
+    prochaines = [pos]
+
+    while len(prochaines) != 0:
+        pos = prochaines.pop(0)
+
+        if not case.est_mur(get_case((pos[0], pos[1] + 1))):
+            prochaines.append((pos[0], pos[1] + 1))
+        elif not case.est_mur(get_case((pos[0], pos[1] - 1))):
+            prochaines.append((pos[0], pos[1] - 1))
+        elif not case.est_mur(get_case((pos[0] + 1, pos[1]))):
+            prochaines.append((pos[0] + 1, pos[1]))
+        elif not case.est_mur(get_case((pos[0] - 1, pos[1]))):
+            prochaines.append((pos[0] - 1, pos[1]))
+
+        case_actuelle = get_case(plateau, pos)
+
+        joueur, objet = case.get_joueurs(case_actuelle), case.get_objet(case_actuelle)
+
+        if len(joueur) != 0:
+            if not nb in res:
+                res[nb] = set()
+            res[nb].add(joueur)
+        elif objet != 0:
+            if not nb in res:
+                res[nb] = set()
+            res[nb].add(objet)
+
+        nb += 1
+    
+    return res
+            
