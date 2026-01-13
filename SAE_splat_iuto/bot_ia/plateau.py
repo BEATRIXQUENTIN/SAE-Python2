@@ -429,8 +429,6 @@ def distances_objets_joueurs(plateau, pos, distance_max):
     prochaines = [(pos, 0)]
     deja_visites = {pos}
 
-    direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
     # Tant qu'il y a des cases à regarder
     while len(prochaines) != 0:
         # On récupère la position de la case et la distance à la case de départ
@@ -439,7 +437,7 @@ def distances_objets_joueurs(plateau, pos, distance_max):
         # Si la distance est en dessous de distance_max
         if nb < distance_max:
             # Pour chaque direction
-            for ligne, colonne in direction:
+            for ligne, colonne in INC_DIRECTION.values():
                 # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
                 prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
                 if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < get_nb_colonnes(plateau) and not case.est_mur(get_case(plateau, prochaine_pos)):
