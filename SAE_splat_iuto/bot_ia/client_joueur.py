@@ -48,29 +48,29 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
         str: une chaine de deux caractères en majuscules indiquant la direction de peinture
             et la direction de déplacement
     """
-    # return random.choice("XNSOE")+random.choice("NSEO")
-    if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
-        cible = position_ma_couleur_proche(
-            le_plateau,
-            joueur.get_position(les_joueurs[ma_couleur]),
-            (plateau.get_nb_lignes(le_plateau) + plateau.get_nb_colonnes(le_plateau)) // 4,
-            ma_couleur
-        )
-        # Si aucune case de ma couleur n'est trouvée, bouger aléatoirement
-        if cible is None:
-            choice = 'X' + random.choice("NSEO")
-        else:
-            choice = 'X' + se_deplacer(le_plateau, joueur.get_position(les_joueurs[ma_couleur]), cible)
-    else:
-        choice = random.choice("XNSOE") + random.choice("NSEO")
+    return random.choice("XNSOE")+random.choice("NSEO")
+    # if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
+    #     cible = position_ma_couleur_proche(
+    #         le_plateau,
+    #         joueur.get_position(les_joueurs[ma_couleur]),
+    #         (plateau.get_nb_lignes(le_plateau) + plateau.get_nb_colonnes(le_plateau)) // 4,
+    #         ma_couleur
+    #     )
+    #     # Si aucune case de ma couleur n'est trouvée, bouger aléatoirement
+    #     if cible is None:
+    #         choice = 'X' + random.choice("NSEO")
+    #     else:
+    #         choice = 'X' + se_deplacer(le_plateau, joueur.get_position(les_joueurs[ma_couleur]), cible)
+    # else:
+    #     choice = random.choice("XNSOE") + random.choice("NSEO")
 
-    return choice
-
-
+    # return choice
 
 
 
-def se_deplacerV0(pos_dep, pos_arr):
+
+
+def se_deplacer(pos_dep, pos_arr, distance_max, ma_couleur):
     # Initialisation des variables
     res = dict()
 
@@ -112,55 +112,6 @@ def se_deplacerV0(pos_dep, pos_arr):
             petit = (distance, pos)
         
     return petit[1]
-
-def se_deplacer(le_plateau, pos_dep, pos_arr):
-    from collections import deque
-
-    # File BFS
-    file = deque()
-    file.append(pos_dep)
-
-    # Dictionnaire parent
-    parents = {pos_dep: None}
-
-    directions = [
-        (-1, 0),  # N
-        ( 1, 0),  # S
-        ( 0, 1),  # E
-        ( 0,-1)   # O
-    ]
-
-    while file:
-        pos = file.popleft()
-
-        if pos == pos_arr:
-            break
-
-        for dl, dc in directions:
-            np = (pos[0] + dl, pos[1] + dc)
-
-            if (0 <= np[0] < plateau.get_nb_lignes(le_plateau)
-            and 0 <= np[1] < plateau.get_nb_colonnes(le_plateau)
-            and not case.est_mur(plateau.get_case(le_plateau, np))
-            and np not in parents):
-
-                parents[np] = pos
-                file.append(np)
-
-    # Aucun chemin trouvé
-    if pos_arr not in parents:
-        return random.choice("NSEO")
-
-    # On remonte depuis l'arrivée jusqu'à la case juste après le départ
-    cur = pos_arr
-    while parents[cur] != pos_dep:
-        cur = parents[cur]
-
-    # On déduit la direction
-    if cur[0] == pos_dep[0] - 1: return 'N'
-    if cur[0] == pos_dep[0] + 1: return 'S'
-    if cur[1] == pos_dep[1] + 1: return 'E'
-    if cur[1] == pos_dep[1] - 1: return 'O'
 
 
 def position_ma_couleur_proche(plateau, pos, distance_max, ma_couleur):
