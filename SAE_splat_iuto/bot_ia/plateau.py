@@ -409,66 +409,37 @@ def distances_objets_joueurs(plateau, pos, distance_max):
         dict: un dictionnaire dont les clés sont des distances et les valeurs sont des ensembles
             contenant à la fois des objets et des joueurs. Attention le dictionnaire ne doit contenir
             des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
-    """ 
-    dico_distance = {}
-    ligne, colonne = pos
-    nb_lignes = get_nb_lignes(plateau)
-    nb_colonnes = get_nb_colonnes(plateau)
-
-    for ligne in range(nb_lignes):
-        for colonne in range(nb_colonnes):
-            pass
-    return dico_distance
-
-
-
-
-
-
-
-def distances_objets_joueurs(plateau, pos, distance_max):
-    """calcul les distances entre la position pos entre les différents objets et
-        joueurs du plateau en se limitant à la distance max.
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
-        distance_max (int): un entier indiquant la distance limite de la recherche
-    Returns:
-        dict: un dictionnaire dont les clés sont des distances et les valeurs sont des ensembles
-            contenant à la fois des objets et des joueurs. Attention le dictionnaire ne doit contenir
-            des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
     """
     res = dict()
-    nb = 0
 
-    prochaines = [pos]
+    prochaines = [(pos, 0)]
+    deja_visites = {pos}
+
+    direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     while len(prochaines) != 0:
-        pos = prochaines.pop(0)
+        pos, nb = prochaines.pop(0)
 
-        if not case.est_mur(get_case((pos[0], pos[1] + 1))):
-            prochaines.append((pos[0], pos[1] + 1))
-        if not case.est_mur(get_case((pos[0], pos[1] - 1))):
-            prochaines.append((pos[0], pos[1] - 1))
-        if not case.est_mur(get_case((pos[0] + 1, pos[1]))):
-            prochaines.append((pos[0] + 1, pos[1]))
-        if not case.est_mur(get_case((pos[0] - 1, pos[1]))):
-            prochaines.append((pos[0] - 1, pos[1]))
+        if nb < distance_max:
+            for ligne, colonne in direction:
+                prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
+                if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < get_nb_colonnes(plateau) and not case.est_mur(get_case(plateau, prochaine_pos)):
+                    prochaines.append((prochaine_pos, nb + 1))
+                    deja_visites.add(prochaine_pos)
 
-        case_actuelle = get_case(plateau, pos)
 
-        joueur, objet = case.get_joueurs(case_actuelle), case.get_objet(case_actuelle)
+            case_actuelle = get_case(plateau, pos)
 
-        if len(joueur) != 0:
-            if not nb in res:
-                res[nb] = set()
-            res[nb] += (joueur)
-        elif objet != 0:
-            if not nb in res:
-                res[nb] = set()
-            res[nb].add(objet)
+            joueurs, objet = case.get_joueurs(case_actuelle), case.get_objet(case_actuelle)
 
-        nb += 1
-    
+            for joueur in joueurs:
+                if not nb in res:
+                    res[nb] = set()
+                res[nb].add(joueur)
+
+            if objet != case.const.AUCUN:
+                if not nb in res:
+                    res[nb] = set()
+                res[nb].add(objet)
+        
     return res
