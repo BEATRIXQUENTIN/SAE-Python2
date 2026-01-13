@@ -48,133 +48,216 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
         str: une chaine de deux caractères en majuscules indiquant la direction de peinture
             et la direction de déplacement
     """
-    return random.choice("XNSOE")+random.choice("NSEO")
-    # if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
-    #     cible = position_ma_couleur_proche(
-    #         le_plateau,
-    #         joueur.get_position(les_joueurs[ma_couleur]),
-    #         (plateau.get_nb_lignes(le_plateau) + plateau.get_nb_colonnes(le_plateau)) // 4,
-    #         ma_couleur
-    #     )
-    #     # Si aucune case de ma couleur n'est trouvée, bouger aléatoirement
-    #     if cible is None:
-    #         choice = 'X' + random.choice("NSEO")
-    #     else:
-    #         choice = 'X' + se_deplacer(le_plateau, joueur.get_position(les_joueurs[ma_couleur]), cible)
-    # else:
-    #     choice = random.choice("XNSOE") + random.choice("NSEO")
-
-    # return choice
+    notre_position = joueur.get_pos(les_joueurs[ma_couleur])
+    direction_peinture = plateau.directions_possibles(le_plateau, notre_position)
+    choice_peinture = ""
+    for dir, couleur in direction_peinture.items():
+        if couleur != ma_couleur:
+            choice_peinture  += dir
 
 
+    if len(choice_peinture) == 0:
+        choice_peinture = "X"
+
+
+    objet_proche = trouver_direction_objet(le_plateau, notre_position)
+    bidon = trouver_direction_bidon(le_plateau, notre_position)
+
+    # if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
+    #     return 'X' + bidon
+    if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
+        return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+    elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 15:
+        direction = objet_proche
+        peinture = 'X'
+        ligne, colonne = plateau.INC_DIRECTION[direction]
+        nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
+        if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
+            peinture = direction
+        return peinture+direction
+    elif joueur.get_reserve(les_joueurs[ma_couleur]) > 10:
+        direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
+        peinture = 'X'
+        ligne, colonne = plateau.INC_DIRECTION[direction]
+        nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
+        if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
+            peinture = direction
+        return peinture+direction
+    else:
+        return random.choice(choice_peinture)+random.choice("NOES")
 
 
 
-def se_deplacer(pos_dep, pos_arr, distance_max, ma_couleur):
-    # Initialisation des variables
-    res = dict()
 
-    prochaines = [(pos, 0)]
-    deja_visites = {pos}
-
-    direction = [(1, 0, 'S'), (-1, 0, 'N'), (0, 1, 'E'), (0, -1, 'O')]
-
-    # Tant qu'il y a des cases à regarder
-    while len(prochaines) != 0:
-        # On récupère la position de la case et la distance à la case de départ
-        pos, nb = prochaines.pop(0)
-
-        # Si la distance est en dessous de distance_max
-        if nb < distance_max:
-            # Pour chaque direction
-            for ligne, colonne, lettre in direction:
-                # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
-                prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
-                if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < plateau.get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < plateau.get_nb_colonnes(plateau) and not case.est_mur(plateau.get_case(plateau, prochaine_pos)):
-                    prochaines.append((prochaine_pos, nb + 1))
-                    deja_visites.add(prochaine_pos)
-
-            # On récupère la case de la position actuelle
-            case_actuelle = plateau.get_case(plateau, pos)
-
-            # On récupère les joueurs et les objets de la case
-            couleur = case.get_couleur(case_actuelle)
-
-            
-
-            if couleur == ma_couleur:
-                res[nb] = pos
-
-    petit = (None, None)
-
-    for distance, pos in res.items():
-        if petit[0] == None or distance < petit[0]:
-            petit = (distance, pos)
-        
-    return petit[1]
+def est_sur_plateau(pos):
+    try:
+        plateau.get_case(le_plateau, pos)
+        return True
+    except:
+        return False
 
 
-def position_ma_couleur_proche(plateau, pos, distance_max, ma_couleur):
-    """calcul les distances entre la position pos entre une case de ma couleur du plateau en se limitant à la distance max.
+def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
+    file_attente = [pos_depart]
 
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
-        distance_max (int): un entier indiquant la distance limite de la recherche
-        ma_couleur (str) : un caractere indiquant la couleur de notre equipe
-    Returns:
-        dict: un dictionnaire dont les clés sont des distances et les valeurs sont des ensembles
-            contenant des couleurs.
-    """
-    # Initialisation des variables
-    res = dict()
+    predecesseurs = {pos_depart: (None, 0)}
 
-    prochaines = [(pos, 0)]
-    deja_visites = {pos}
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_cols = plateau.get_nb_colonnes(le_plateau)
 
-    direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    while len(file_attente) != 0:
+        pos_courante = file_attente.pop(0)
+        la_case = plateau.get_case(le_plateau, pos_courante)
 
-    # Tant qu'il y a des cases à regarder
-    while len(prochaines) != 0:
-        # On récupère la position de la case et la distance à la case de départ
-        pos, nb = prochaines.pop(0)
+        if pos_courante != pos_depart and case.get_objet(la_case) != plateau.case.const.AUCUN:
 
-        # Si la distance est en dessous de distance_max
-        if nb < distance_max:
-            # Pour chaque direction
-            for ligne, colonne in direction:
-                # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
-                prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
-                if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < plateau.get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < plateau.get_nb_colonnes(plateau) and not case.est_mur(plateau.get_case(plateau, prochaine_pos)):
-                    prochaines.append((prochaine_pos, nb + 1))
-                    deja_visites.add(prochaine_pos)
+            curr = pos_courante
+            while predecesseurs[curr] != pos_depart:
+                curr = predecesseurs[curr]
 
-            # On récupère la case de la position actuelle
-            case_actuelle = plateau.get_case(plateau, pos)
+            delta_lig = curr[0] - pos_depart[0]
+            delta_col = curr[1] - pos_depart[1]
 
-            # On récupère les joueurs et les objets de la case
-            couleur = case.get_couleur(case_actuelle)
+            if delta_lig == -1: return 'N'
+            if delta_lig == 1:  return 'S'
+            if delta_col == 1:  return 'E'
+            if delta_col == -1: return 'O'
 
-            
+        for d_l, d_c in plateau.INC_DIRECTION.values():
+            voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
 
-            if couleur == ma_couleur:
-                res[nb] = pos
+            if (0 <= voisin[0] < nb_lignes and 
+                0 <= voisin[1] < nb_cols and 
+                voisin not in predecesseurs):
 
-    petit = (None, None)
+                case_voisine = plateau.get_case(le_plateau, voisin)
+                if not case.est_mur(case_voisine):
+                    predecesseurs[voisin] = pos_courante
+                    file_attente.append(voisin)
 
-    for distance, pos in res.items():
-        if petit[0] == None or distance < petit[0]:
-            petit = (distance, pos)
-        
-    return petit[1]
+    return None
 
-#     print(les_joueurs[ma_couleur])
-#     print("\n\n")
+def trouver_direction_bidon(le_plateau, pos_depart):
+    file_attente = [pos_depart]
 
-# {'A': {'couleur': 'A', 'nom': 'joueur2', 'reserve': 4, 'surface': 9, 'points': 78, 'position': (5, 9), 'objet': 0, 'duree': 0}, 'B': {'couleur': 'B', 'nom': 'joueur3', 'reserve': 11, 'surface': 4, 'points': 25, 'position': (2, 3), 'objet': 0, 'duree': 0}, 'C': {'couleur': 'C', 'nom': 'joueur1', 'reserve': -1, 'surface': 13, 'points': 111, 'position': (8, 7), 'objet': 0, 'duree': 0}, 'D': {'couleur': 'D', 'nom': 'joueur4', 'reserve': 6, 'surface': 11, 'points': 79, 'position': (7, 13), 'objet': 0, 'duree': 0}}
+    predecesseurs = {pos_depart: None}
 
-    # IA complètement aléatoire
-    # return random.choice("XNSOE")+random.choice("NSEO")
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_cols = plateau.get_nb_colonnes(le_plateau)
+
+    while len(file_attente) != 0:
+        pos_courante = file_attente.pop(0)
+        la_case = plateau.get_case(le_plateau, pos_courante)
+
+        if pos_courante != pos_depart and case.get_objet(la_case) != plateau.case.const.BIDON:
+
+            curr = pos_courante
+            while predecesseurs[curr] != pos_depart:
+                curr = predecesseurs[curr]
+
+            delta_lig = curr[0] - pos_depart[0]
+            delta_col = curr[1] - pos_depart[1]
+
+            if delta_lig == -1: return 'N'
+            if delta_lig == 1:  return 'S'
+            if delta_col == 1:  return 'E'
+            if delta_col == -1: return 'O'
+
+        for d_l, d_c in plateau.INC_DIRECTION.values():
+            voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
+
+            if (0 <= voisin[0] < nb_lignes and 
+                0 <= voisin[1] < nb_cols and 
+                voisin not in predecesseurs):
+
+                case_voisine = plateau.get_case(le_plateau, voisin)
+                if not case.est_mur(case_voisine):
+                    predecesseurs[voisin] = pos_courante
+                    file_attente.append(voisin)
+
+    return None
+
+
+def trouver_direction_recharge(le_plateau, pos_depart, ma_couleur):
+    file_attente = [pos_depart]
+
+    predecesseurs = {pos_depart: None}
+
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_cols = plateau.get_nb_colonnes(le_plateau)
+
+    while len(file_attente) != 0:
+        pos_courante = file_attente.pop(0)
+        la_case = plateau.get_case(le_plateau, pos_courante)
+
+        if pos_courante != pos_depart and case.get_couleur(la_case) == ma_couleur:
+
+            curr = pos_courante
+            while predecesseurs[curr] != pos_depart:
+                curr = predecesseurs[curr]
+
+            delta_lig = curr[0] - pos_depart[0]
+            delta_col = curr[1] - pos_depart[1]
+
+            if delta_lig == -1: return 'N'
+            if delta_lig == 1:  return 'S'
+            if delta_col == 1:  return 'E'
+            if delta_col == -1: return 'O'
+
+        for d_l, d_c in plateau.INC_DIRECTION.values():
+            voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
+
+            if (0 <= voisin[0] < nb_lignes and 
+                0 <= voisin[1] < nb_cols and 
+                voisin not in predecesseurs):
+
+                case_voisine = plateau.get_case(le_plateau, voisin)
+                if not case.est_mur(case_voisine):
+                    predecesseurs[voisin] = pos_courante
+                    file_attente.append(voisin)
+
+    return random.choice("NSEO")
+
+def trouver_direction_autre_couleur(le_plateau, pos_depart, ma_couleur):
+    file_attente = [pos_depart]
+
+    predecesseurs = {pos_depart: None}
+
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_cols = plateau.get_nb_colonnes(le_plateau)
+
+    while len(file_attente) != 0:
+        pos_courante = file_attente.pop(0)
+        la_case = plateau.get_case(le_plateau, pos_courante)
+
+        if pos_courante != pos_depart and case.get_couleur(la_case) != ma_couleur:
+
+            curr = pos_courante
+            while predecesseurs[curr] != pos_depart:
+                curr = predecesseurs[curr]
+
+            delta_lig = curr[0] - pos_depart[0]
+            delta_col = curr[1] - pos_depart[1]
+
+            if delta_lig == -1: return 'N'
+            if delta_lig == 1:  return 'S'
+            if delta_col == 1:  return 'E'
+            if delta_col == -1: return 'O'
+
+        for d_l, d_c in plateau.INC_DIRECTION.values():
+            voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
+
+            if (0 <= voisin[0] < nb_lignes and 
+                0 <= voisin[1] < nb_cols and 
+                voisin not in predecesseurs):
+
+                case_voisine = plateau.get_case(le_plateau, voisin)
+                if not case.est_mur(case_voisine):
+                    predecesseurs[voisin] = pos_courante
+                    file_attente.append(voisin)
+
+    return random.choice("NSEO")
+
 
 if __name__=="__main__":
     noms_caracteristiques=["duree_actuelle","duree_totale","reserve_initiale","duree_obj","penalite","bonus_touche",
