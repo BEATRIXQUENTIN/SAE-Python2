@@ -231,8 +231,10 @@ def classement_joueurs(liste_joueurs,critere):
     Returns:
         list: la liste des joueurs triées suivant le critère indiqué.
     """
+    # Tri la liste en fonction de critere
     res = sorted(liste_joueurs, key = lambda joueur : joueur[critere], reverse = True)
 
+    # S'il y a égalité ça trie les cas d'égalité en fonction de la réserve
     for i in range(len(res)-1):
             if res[i][critere] == res[i+1][critere] and res[i]['reserve'] < res[i+1]['reserve']:
                 res[i], res[i+1] = res[i+1], res[i]

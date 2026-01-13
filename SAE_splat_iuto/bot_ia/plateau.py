@@ -311,10 +311,15 @@ def surfaces_peintes(plateau, nb_joueurs):
         dict: un dictionnaire dont les clées sont les identifiants joueurs et les
             valeurs le nombre de cases peintes par le joueur
     """
+    # Initialise les lettres pour les joueurs
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     dico_joueur = {}
+
+    # On initialise le dictionnaire à 0 pour chaque joueur
     for i in range(nb_joueurs):
         dico_joueur[alphabet[i]] = 0 #On met une lettre pour un joueur
+
+    # Pour chaque case on regarde c'est de quelle couleur et on ajoute 1 de suface pour le bon joueur
     for case in plateau['les_valeurs']: 
         couleur = case['couleur']
         if couleur != ' ':
@@ -335,22 +340,25 @@ def directions_possibles(plateau,pos):
               de la case d'arrivée si on prend cette direction
               à partir de pos
     """
+    # Initialisation des variables
     dico_dir_cl = {}
     ligne, colonne = pos
     nb_lignes = get_nb_lignes(plateau)
     nb_colonnes = get_nb_colonnes(plateau)
 
+    # Pour chaque direction
     for direction, (dirl, dirc) in INC_DIRECTION.items():
 
-        if direction != 'X':
+        if direction != 'X': # Si ce n'est pas le X (ne pas bouger)
         
-
+            # On prend la nouvelle position
             nouvelle_pos = (ligne + dirl, colonne + dirc)
 
-            
+            # On vérifie si elle est dans le plateau pour récupérer la case
             if 0 <= nouvelle_pos[0] < nb_lignes and 0 <= nouvelle_pos[1] < nb_colonnes:
                 la_case = get_case(plateau, nouvelle_pos)
 
+                # Si ce n'est pas un mur on l'ajoute au dictionnaire des directions possibles avec en valeurs la couleur de la case
                 if not case.est_mur(la_case):
                     dico_dir_cl[direction] = case.get_couleur(la_case)
 
@@ -368,18 +376,22 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     Returns:
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
+    # On initialise les variables
     nb_joueurs = 0
     nb_parcours = 0
-
     stop = False
 
+    # On récupère la case actuelle
     case_actuelle = get_case(plateau, pos)
 
+    # Tant qu'on est sous la distance max, qu'on est sur le plateau et que la case n'est pas un mur
     while nb_parcours < distance_max and 0 <= pos[0] < get_nb_lignes(plateau) and 0 <= pos[1] < get_nb_colonnes(plateau) and not case.est_mur(case_actuelle) and not stop:
 
+        # On ajoute 1 au nombre de parcours et on ajoute le nombre de joueur rencontrés
         nb_joueurs += case.get_nb_joueurs(case_actuelle)
         nb_parcours += 1
 
+        # On prend la nouvelle position
         if direction == 'E':
             pos = (pos[0], pos[1] + 1)
         elif direction == 'O':
@@ -389,6 +401,7 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
         elif direction == 'N':
             pos = (pos[0] - 1, pos[1])
             
+        # Puis la prochaine case à regarder
         try:
             case_actuelle = get_case(plateau, pos)
         except:
@@ -410,6 +423,7 @@ def distances_objets_joueurs(plateau, pos, distance_max):
             contenant à la fois des objets et des joueurs. Attention le dictionnaire ne doit contenir
             des entrées uniquement pour les distances où il y a effectivement au moins un objet ou un joueur
     """
+    # Initialisation des variables
     res = dict()
 
     prochaines = [(pos, 0)]
@@ -417,21 +431,28 @@ def distances_objets_joueurs(plateau, pos, distance_max):
 
     direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
+    # Tant qu'il y a des cases à regarder
     while len(prochaines) != 0:
+        # On récupère la position de la case et la distance à la case de départ
         pos, nb = prochaines.pop(0)
 
+        # Si la distance est en dessous de distance_max
         if nb < distance_max:
+            # Pour chaque direction
             for ligne, colonne in direction:
+                # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
                 prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
                 if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < get_nb_colonnes(plateau) and not case.est_mur(get_case(plateau, prochaine_pos)):
                     prochaines.append((prochaine_pos, nb + 1))
                     deja_visites.add(prochaine_pos)
 
-
+            # On récupère la case de la position actuelle
             case_actuelle = get_case(plateau, pos)
 
+            # On récupère les joueurs et les objets de la case
             joueurs, objet = case.get_joueurs(case_actuelle), case.get_objet(case_actuelle)
 
+            # On ajoute s'il y en a, les joueurs et les objets dans le dictionnaire final avec la distance de la case de départ
             for joueur in joueurs:
                 if not nb in res:
                     res[nb] = set()
