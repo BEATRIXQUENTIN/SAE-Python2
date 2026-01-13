@@ -48,8 +48,182 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
         str: une chaine de deux caractères en majuscules indiquant la direction de peinture
             et la direction de déplacement
     """
+    # return random.choice("XNSOE")+random.choice("NSEO")
+    if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
+        cible = position_ma_couleur_proche(
+            le_plateau,
+            joueur.get_position(les_joueurs[ma_couleur]),
+            (plateau.get_nb_lignes(le_plateau) + plateau.get_nb_colonnes(le_plateau)) // 4,
+            ma_couleur
+        )
+        # Si aucune case de ma couleur n'est trouvée, bouger aléatoirement
+        if cible is None:
+            choice = 'X' + random.choice("NSEO")
+        else:
+            choice = 'X' + se_deplacer(le_plateau, joueur.get_position(les_joueurs[ma_couleur]), cible)
+    else:
+        choice = random.choice("XNSOE") + random.choice("NSEO")
+
+    return choice
+
+
+
+
+
+def se_deplacerV0(pos_dep, pos_arr):
+    # Initialisation des variables
+    res = dict()
+
+    prochaines = [(pos, 0)]
+    deja_visites = {pos}
+
+    direction = [(1, 0, 'S'), (-1, 0, 'N'), (0, 1, 'E'), (0, -1, 'O')]
+
+    # Tant qu'il y a des cases à regarder
+    while len(prochaines) != 0:
+        # On récupère la position de la case et la distance à la case de départ
+        pos, nb = prochaines.pop(0)
+
+        # Si la distance est en dessous de distance_max
+        if nb < distance_max:
+            # Pour chaque direction
+            for ligne, colonne, lettre in direction:
+                # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
+                prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
+                if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < plateau.get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < plateau.get_nb_colonnes(plateau) and not case.est_mur(plateau.get_case(plateau, prochaine_pos)):
+                    prochaines.append((prochaine_pos, nb + 1))
+                    deja_visites.add(prochaine_pos)
+
+            # On récupère la case de la position actuelle
+            case_actuelle = plateau.get_case(plateau, pos)
+
+            # On récupère les joueurs et les objets de la case
+            couleur = case.get_couleur(case_actuelle)
+
+            
+
+            if couleur == ma_couleur:
+                res[nb] = pos
+
+    petit = (None, None)
+
+    for distance, pos in res.items():
+        if petit[0] == None or distance < petit[0]:
+            petit = (distance, pos)
+        
+    return petit[1]
+
+def se_deplacer(le_plateau, pos_dep, pos_arr):
+    from collections import deque
+
+    # File BFS
+    file = deque()
+    file.append(pos_dep)
+
+    # Dictionnaire parent
+    parents = {pos_dep: None}
+
+    directions = [
+        (-1, 0),  # N
+        ( 1, 0),  # S
+        ( 0, 1),  # E
+        ( 0,-1)   # O
+    ]
+
+    while file:
+        pos = file.popleft()
+
+        if pos == pos_arr:
+            break
+
+        for dl, dc in directions:
+            np = (pos[0] + dl, pos[1] + dc)
+
+            if (0 <= np[0] < plateau.get_nb_lignes(le_plateau)
+            and 0 <= np[1] < plateau.get_nb_colonnes(le_plateau)
+            and not case.est_mur(plateau.get_case(le_plateau, np))
+            and np not in parents):
+
+                parents[np] = pos
+                file.append(np)
+
+    # Aucun chemin trouvé
+    if pos_arr not in parents:
+        return random.choice("NSEO")
+
+    # On remonte depuis l'arrivée jusqu'à la case juste après le départ
+    cur = pos_arr
+    while parents[cur] != pos_dep:
+        cur = parents[cur]
+
+    # On déduit la direction
+    if cur[0] == pos_dep[0] - 1: return 'N'
+    if cur[0] == pos_dep[0] + 1: return 'S'
+    if cur[1] == pos_dep[1] + 1: return 'E'
+    if cur[1] == pos_dep[1] - 1: return 'O'
+
+
+def position_ma_couleur_proche(plateau, pos, distance_max, ma_couleur):
+    """calcul les distances entre la position pos entre une case de ma couleur du plateau en se limitant à la distance max.
+
+    Args:
+        plateau (dict): le plateau considéré
+        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
+        distance_max (int): un entier indiquant la distance limite de la recherche
+        ma_couleur (str) : un caractere indiquant la couleur de notre equipe
+    Returns:
+        dict: un dictionnaire dont les clés sont des distances et les valeurs sont des ensembles
+            contenant des couleurs.
+    """
+    # Initialisation des variables
+    res = dict()
+
+    prochaines = [(pos, 0)]
+    deja_visites = {pos}
+
+    direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    # Tant qu'il y a des cases à regarder
+    while len(prochaines) != 0:
+        # On récupère la position de la case et la distance à la case de départ
+        pos, nb = prochaines.pop(0)
+
+        # Si la distance est en dessous de distance_max
+        if nb < distance_max:
+            # Pour chaque direction
+            for ligne, colonne in direction:
+                # On prend la prochaine position, on regarde si on ne l'a pas déjà regardé, si elle est sur le plateau et si ce n'est pas un mur: On l'ajoute à prochaines
+                prochaine_pos = (pos[0] + ligne, pos[1] + colonne)
+                if prochaine_pos not in deja_visites and 0 <= prochaine_pos[0] < plateau.get_nb_lignes(plateau) and 0 <= prochaine_pos[1] < plateau.get_nb_colonnes(plateau) and not case.est_mur(plateau.get_case(plateau, prochaine_pos)):
+                    prochaines.append((prochaine_pos, nb + 1))
+                    deja_visites.add(prochaine_pos)
+
+            # On récupère la case de la position actuelle
+            case_actuelle = plateau.get_case(plateau, pos)
+
+            # On récupère les joueurs et les objets de la case
+            couleur = case.get_couleur(case_actuelle)
+
+            
+
+            if couleur == ma_couleur:
+                res[nb] = pos
+
+    petit = (None, None)
+
+    for distance, pos in res.items():
+        if petit[0] == None or distance < petit[0]:
+            petit = (distance, pos)
+        
+    return petit[1]
+
+#     print(les_joueurs[ma_couleur])
+#     print("\n\n")
+
+# {'A': {'couleur': 'A', 'nom': 'joueur2', 'reserve': 4, 'surface': 9, 'points': 78, 'position': (5, 9), 'objet': 0, 'duree': 0}, 'B': {'couleur': 'B', 'nom': 'joueur3', 'reserve': 11, 'surface': 4, 'points': 25, 'position': (2, 3), 'objet': 0, 'duree': 0}, 'C': {'couleur': 'C', 'nom': 'joueur1', 'reserve': -1, 'surface': 13, 'points': 111, 'position': (8, 7), 'objet': 0, 'duree': 0}, 'D': {'couleur': 'D', 'nom': 'joueur4', 'reserve': 6, 'surface': 11, 'points': 79, 'position': (7, 13), 'objet': 0, 'duree': 0}}
+
     # IA complètement aléatoire
-    return random.choice("XNSOE")+random.choice("NSEO")
+    # return random.choice("XNSOE")+random.choice("NSEO")
 
 if __name__=="__main__":
     noms_caracteristiques=["duree_actuelle","duree_totale","reserve_initiale","duree_obj","penalite","bonus_touche",
