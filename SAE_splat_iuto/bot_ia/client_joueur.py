@@ -67,7 +67,9 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
 
     objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
 
-    if objet_actuel != plateau.case.const.AUCUN:
+    if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
+        return 'X' + bidon
+    elif objet_actuel != plateau.case.const.AUCUN:
         if objet_actuel == plateau.case.const.PISTOLET:
             if joueur.get_duree(les_joueurs[ma_couleur]) > 1:
                 peinture_possible = directions_murs(le_plateau, notre_position)
@@ -112,8 +114,6 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
 
         else:
             return random.choice(choice_peinture)+random.choice("NOES")
-    elif bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
-        return 'X' + bidon
     elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 12:
         direction = objet_proche
         peinture = 'X'
