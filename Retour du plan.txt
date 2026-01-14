@@ -20,30 +20,51 @@ elif réservoir < -5:
         else:
             direction_notre_case
 
-elif réservoir < 0:
+elif réservoir =< 0:
     if bidon et distance_bidon < distance_recharge:
         trouver bidon
-    else :
+    elif il y a pas de case de notre couleur :
         if il y a au moin 2 cases de notre couleur:
             trouver_direction_recharge #à voir si y'a un mec à coté
         elif objet:
             trouver_objet
         else:
             direction_notre_case
-        
-elif réservoir < 5:
+    else :
+        random
+
+
+elif réservoir < 3:
     if bidon et distance_bidon < distance_recharge:
         trouver bidon
-    else :
+    elif il y a pas de case de notre couleur:
         if il y a au moin 2 cases de notre couleur:
             trouver_direction_recharge #à voir si y'a un mec à coté
         elif objet:
             trouver_objet
         else:
             direction_notre_case
+    else:
+        peindre
 
 elif réservoir < 10:
-
+    if t'as un objet:
+        tu l'utilise: donc pas "X"
+    if distance_objet < 3:
+        prendre_objet
+    else :
+        se diriger la case d'une couleur différente la plus proche et tu tire si y'a deja une diférente de toi à coté de toi
 elif réservoir < 15:
-
+    if t'as un objet:
+        tu l'utilise: donc pas "X"
+    if distance_objet < 3:
+        prendre_objet
+    else :
+        se diriger la case d'une couleur différente la plus proche et tu tire si y'a deja une diférente de toi à coté de toi
 else :
+    if t'as un objet:
+        tu l'utilise: donc pas "X"
+    if distance_objet < 3:
+        prendre_objet
+    else :
+        se diriger la case d'une couleur différente la plus proche et tu tire si y'a deja une diférente de toi à coté de toi
