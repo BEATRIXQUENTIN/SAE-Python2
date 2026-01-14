@@ -67,7 +67,7 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
 
     objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
 
-    if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
+    if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 3:
         return 'X' + bidon
     elif objet_actuel != plateau.case.const.AUCUN:
         if objet_actuel == plateau.case.const.PISTOLET:
