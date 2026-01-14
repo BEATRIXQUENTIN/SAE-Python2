@@ -149,7 +149,7 @@ def trouver_direction_bidon(le_plateau, pos_depart):
         pos_courante = file_attente.pop(0)
         la_case = plateau.get_case(le_plateau, pos_courante)
 
-        if pos_courante != pos_depart and case.get_objet(la_case) != plateau.case.const.BIDON:
+        if pos_courante != pos_depart and case.get_objet(la_case) == plateau.case.const.BIDON:
 
             curr = pos_courante
             while predecesseurs[curr] != pos_depart:
