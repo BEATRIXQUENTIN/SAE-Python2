@@ -1,0 +1,49 @@
+if réservoir < -10:
+    if bidon et distance_bidon < distance_recharge*3:
+        trouver bidon
+    else :
+        if il y a au moin 2 cases de notre couleur:
+            trouver_direction_recharge #à voir si y'a un mec à coté
+        elif objet:
+            trouver_objet
+        else:
+            direction_notre_case
+
+elif réservoir < -5:
+     if bidon et distance_bidon < distance_recharge*2:
+        trouver bidon
+    else :
+        if il y a au moin 2 cases de notre couleur:
+            trouver_direction_recharge #à voir si y'a un mec à coté
+        elif objet:
+            trouver_objet
+        else:
+            direction_notre_case
+
+elif réservoir < 0:
+    if bidon et distance_bidon < distance_recharge:
+        trouver bidon
+    else :
+        if il y a au moin 2 cases de notre couleur:
+            trouver_direction_recharge #à voir si y'a un mec à coté
+        elif objet:
+            trouver_objet
+        else:
+            direction_notre_case
+        
+elif réservoir < 5:
+    if bidon et distance_bidon < distance_recharge:
+        trouver bidon
+    else :
+        if il y a au moin 2 cases de notre couleur:
+            trouver_direction_recharge #à voir si y'a un mec à coté
+        elif objet:
+            trouver_objet
+        else:
+            direction_notre_case
+
+elif réservoir < 10:
+
+elif réservoir < 15:
+
+else :
