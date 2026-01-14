@@ -49,7 +49,9 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
             et la direction de déplacement
     """
     notre_position = joueur.get_pos(les_joueurs[ma_couleur])
+
     direction_peinture = plateau.directions_possibles(le_plateau, notre_position)
+
     choice_peinture = ""
     for dir, couleur in direction_peinture.items():
         if couleur != ma_couleur:
@@ -63,11 +65,56 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
     objet_proche = trouver_direction_objet(le_plateau, notre_position)
     bidon = trouver_direction_bidon(le_plateau, notre_position)
 
-    # if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
-    #     return 'X' + bidon
-    if joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
-        return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
-    elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 15:
+    objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
+
+    if objet_actuel != plateau.case.const.AUCUN:
+        if objet_actuel == plateau.case.const.PISTOLET:
+            if joueur.get_duree(les_joueurs[ma_couleur]) > 1:
+                peinture_possible = directions_murs(le_plateau, notre_position)
+                if len(peinture_possible) == 0:
+                    peinture = 'X'
+                else:
+                    peinture = random.choice(peinture_possible)
+                deplacement_possible = plateau.directions_possibles(le_plateau, notre_position)
+                deplacement = ""
+                for dir in deplacement_possible:
+                    if deplacement_possible[dir] == ma_couleur:
+                        deplacement += dir
+                if len(deplacement) == 0:
+                    for dir in deplacement_possible:
+                        if deplacement_possible[dir] != ma_couleur:
+                            deplacement += dir
+                if len(deplacement) == 0:
+                    deplacement = 'NSOE'
+                else:
+                    deplacement = random.choice(deplacement)
+                return peinture+deplacement
+            else:
+                direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
+                peinture_possible = plateau.directions_possibles(le_plateau, notre_position)
+                if len(peinture_possible) == 0:
+                    peinture = 'X'
+                else:
+                    peinture = ""
+                    for peint in peinture_possible:
+                        peinture += peint
+
+                    if len(peinture) == 0:
+                        peinture = "NOES"
+                    peinture = random.choice(peinture)
+
+
+                ligne, colonne = plateau.INC_DIRECTION[direction]
+                nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
+                if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
+                    peinture = direction
+                return peinture + direction
+
+        else:
+            return random.choice(choice_peinture)+random.choice("NOES")
+    elif bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 5:
+        return 'X' + bidon
+    elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 12:
         direction = objet_proche
         peinture = 'X'
         ligne, colonne = plateau.INC_DIRECTION[direction]
@@ -75,6 +122,8 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
         if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
             peinture = direction
         return peinture+direction
+    elif joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
+        return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
     elif joueur.get_reserve(les_joueurs[ma_couleur]) > 10:
         direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
         peinture = 'X'
@@ -86,6 +135,31 @@ def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
     else:
         return random.choice(choice_peinture)+random.choice("NOES")
 
+
+
+def directions_murs(le_plateau,pos):
+    # Initialisation des variables
+    direction_possibles = ""
+    ligne, colonne = pos
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_colonnes = plateau.get_nb_colonnes(le_plateau)
+
+    # Pour chaque direction
+    for direction, (dirl, dirc) in plateau.INC_DIRECTION.items():
+
+        if direction != 'X': # Si ce n'est pas le X (ne pas bouger)
+        
+            # On prend la nouvelle position
+            nouvelle_pos = (ligne + dirl, colonne + dirc)
+
+            # On vérifie si elle est dans le plateau pour récupérer la case
+            if 0 <= nouvelle_pos[0] < nb_lignes and 0 <= nouvelle_pos[1] < nb_colonnes:
+                la_case = plateau.get_case(le_plateau, nouvelle_pos)
+
+                if case.est_mur(la_case):
+                    direction_possibles+=direction
+
+    return direction_possibles
 
 
 
