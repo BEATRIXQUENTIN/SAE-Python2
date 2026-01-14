@@ -35,25 +35,43 @@ def mon_IA(ma_couleur, carac_jeu, le_plateau, les_joueurs):
     reserve = joueur.get_reserve(les_joueurs[ma_couleur])
     objet = joueur.get_objet(les_joueurs[ma_couleur])
     autour = plateau.directions_possibles(le_plateau, notre_position)
-
+    objet_proche = trouver_direction_objet(le_plateau, notre_position)
+    objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
+    ma_case_proche = position_ma_case_plus_proche(le_plateau, notre_position, ma_couleur)
 
     choice_peinture = ""
     for dir, couleur in autour.items():
         if couleur != ma_couleur:
             choice_peinture  += dir
 
-
     if len(choice_peinture) == 0:
         choice_peinture = "X"
 
+    if reserve < 2:
 
-    objet_proche = trouver_direction_objet(le_plateau, notre_position)
-    bidon = trouver_direction_bidon(le_plateau, notre_position)
+        bidon = trouver_direction_bidon(le_plateau, notre_position, 4)
+        if bidon is not None:
+            return 'X' + bidon
 
-    objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
+        if ma_case_proche is not None:
+            directions_autour = plateau.directions_possibles(le_plateau, ma_case_proche)
 
-    if joueur.get_reserve(les_joueurs[ma_couleur]) < 0 and plateau.directions_possibles(le_plateau, position_ma_case_plus_proche(le_plateau, notre_position, ma_couleur))[] == ma_couleur:
-        return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+            if ma_couleur in directions_autour.values():
+                return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+
+            bidon = trouver_direction_bidon(le_plateau, notre_position, 7)
+            if bidon is not None:
+                return 'X' + bidon
+
+        if objet_proche is not None:
+            return 'X' + objet_proche
+
+        return random.choice(choice_peinture) + random.choice("NOES")
+        
+    elif bidon != None and reserve < 6:
+        bidon = trouver_direction_bidon(le_plateau, notre_position, 2)
+        return 'X' + bidon
+        
     elif objet_actuel != plateau.case.const.AUCUN:
         if objet_actuel == plateau.case.const.PISTOLET:
             if joueur.get_duree(les_joueurs[ma_couleur]) > 1:
@@ -99,6 +117,7 @@ def mon_IA(ma_couleur, carac_jeu, le_plateau, les_joueurs):
 
         else:
             return random.choice(choice_peinture)+random.choice("NOES")
+        
     elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 12:
         direction = objet_proche
         peinture = 'X'
@@ -155,7 +174,7 @@ def est_sur_plateau(pos):
         return False
 
 
-def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
+def trouver_direction_objet(le_plateau, pos_depart, portee_max):
     file_attente = [pos_depart]
 
     predecesseurs = {pos_depart: (None, 0)}
@@ -184,9 +203,7 @@ def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
         for d_l, d_c in plateau.INC_DIRECTION.values():
             voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
 
-            if (0 <= voisin[0] < nb_lignes and 
-                0 <= voisin[1] < nb_cols and 
-                voisin not in predecesseurs):
+            if (0 <= voisin[0] < nb_lignes and 0 <= voisin[1] < nb_cols and voisin not in predecesseurs):
 
                 case_voisine = plateau.get_case(le_plateau, voisin)
                 if not case.est_mur(case_voisine):
@@ -195,16 +212,19 @@ def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
 
     return None
 
-def trouver_direction_bidon(le_plateau, pos_depart):
-    file_attente = [pos_depart]
-
+def trouver_direction_bidon(le_plateau, pos_depart, portee_max):
+    file_attente = [(pos_depart, 0)]
     predecesseurs = {pos_depart: None}
 
     nb_lignes = plateau.get_nb_lignes(le_plateau)
     nb_cols = plateau.get_nb_colonnes(le_plateau)
 
     while len(file_attente) != 0:
-        pos_courante = file_attente.pop(0)
+        pos_courante, dist = file_attente.pop(0)
+
+        if dist > portee_max:
+            continue
+
         la_case = plateau.get_case(le_plateau, pos_courante)
 
         if pos_courante != pos_depart and case.get_objet(la_case) == plateau.case.const.BIDON:
@@ -224,14 +244,12 @@ def trouver_direction_bidon(le_plateau, pos_depart):
         for d_l, d_c in plateau.INC_DIRECTION.values():
             voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
 
-            if (0 <= voisin[0] < nb_lignes and 
-                0 <= voisin[1] < nb_cols and 
-                voisin not in predecesseurs):
+            if (0 <= voisin[0] < nb_lignes and 0 <= voisin[1] < nb_cols and voisin not in predecesseurs):
 
                 case_voisine = plateau.get_case(le_plateau, voisin)
                 if not case.est_mur(case_voisine):
                     predecesseurs[voisin] = pos_courante
-                    file_attente.append(voisin)
+                    file_attente.append((voisin, dist + 1))
 
     return None
 
