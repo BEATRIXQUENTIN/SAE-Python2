@@ -17,7 +17,7 @@ Tous droits réservés.
 
 Module contenant l'implémentation de l'IA et le programme principal du joueur
 """
-
+# https://docs.google.com/document/d/1Dkk9zMYfzx0UXcRJ36-t6MWX58VViBr57BEJjLMoGSU/edit?usp=sharing
 
 import argparse
 import random
