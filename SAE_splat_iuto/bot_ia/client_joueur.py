@@ -288,6 +288,7 @@ def trouver_direction_objet(le_plateau, pos_depart):
     return None, None # Si aucun objet sur la carte
     # Complexité O(N) car on fait toute la carte au maximum je pense
 
+
 def trouver_direction_bidon(le_plateau, pos_depart):
     """Permet de trouver le plus court chemin vers un bidon à partir de pos_depart
 
@@ -407,6 +408,7 @@ def trouver_direction_recharge(le_plateau, pos_depart, ma_couleur):
         
     return random.choice("NSEO") # Au cas où (normalement on y va jamais)
     # Complexité O(N) car je pense au maximum on fait toutes les cases du plateau
+
 
 def trouver_direction_cible(le_plateau, pos_depart, couleur_cible):
     """Permet de trouver le plus court chemin vers un bidon à partir de pos_depart
