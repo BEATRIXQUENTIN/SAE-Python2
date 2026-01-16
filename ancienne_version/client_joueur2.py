@@ -28,133 +28,146 @@ from bot_ia  import plateau
 from bot_ia  import case
 from bot_ia  import joueur
 
-def mon_IA(ma_couleur,carac_jeu, le_plateau, les_joueurs):
-    """ Cette fonction permet de calculer les deux actions du joueur de couleur ma_couleur
-        en fonction de l'état du jeu décrit par les paramètres. 
-        Le premier caractère est parmi XSNOE X indique pas de peinture et les autres
-        caractères indique la direction où peindre (Nord, Sud, Est ou Ouest)
-        Le deuxième caractère est parmi SNOE indiquant la direction où se déplacer.
 
-    Args:
-        ma_couleur (str): un caractère en majuscule indiquant la couleur du joueur
-        carac_jeu (dict)): un dictionnaire donnant les valeurs des caractéristiques du jeu:
-             duree_actuelle, duree_totale, reserve_initiale, duree_obj, penalite, bonus_touche,
-             bonus_recharge, bonus_objet et distance_max,
-        le_plateau (dict): l'état du plateau actuel sous la forme décrite dans plateau.py
-        les_joueurs (list[joueur]): la liste des joueurs avec leurs caractéristiques utilisant l'API
-         joueur.py
+def mon_IA(ma_couleur, carac_jeu, le_plateau, les_joueurs):
 
-    Returns:
-        str: une chaine de deux caractères en majuscules indiquant la direction de peinture
-            et la direction de déplacement
-    """
     notre_position = joueur.get_pos(les_joueurs[ma_couleur])
-
-    direction_peinture = plateau.directions_possibles(le_plateau, notre_position)
-
-    choice_peinture = ""
-    for dir, couleur in direction_peinture.items():
-        if couleur != ma_couleur:
-            choice_peinture  += dir
-
-
-    if len(choice_peinture) == 0:
-        choice_peinture = "X"
-
-
+    reserve = joueur.get_reserve(les_joueurs[ma_couleur])
+    objet = joueur.get_objet(les_joueurs[ma_couleur])
+    autour = plateau.directions_possibles(le_plateau, notre_position)
     objet_proche = trouver_direction_objet(le_plateau, notre_position)
-    bidon = trouver_direction_bidon(le_plateau, notre_position)
-
     objet_actuel = joueur.get_objet(les_joueurs[ma_couleur])
+    ma_case_proche = position_ma_case_plus_proche(le_plateau, notre_position, ma_couleur)
 
-    if bidon != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 3:
-        return 'X' + bidon
-    elif objet_actuel != plateau.case.const.AUCUN or objet_actuel != plateau.case.const.BOUCLIER:
+    if reserve < 2:
+
+        bidon = trouver_direction_bidon(le_plateau, notre_position, 4)
+        if bidon is not None:
+            return 'X' + bidon
+
+        if ma_case_proche is not None:
+            directions_autour = plateau.directions_possibles(le_plateau, ma_case_proche)
+
+            if ma_couleur in directions_autour.values():
+                return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+
+            bidon = trouver_direction_bidon(le_plateau, notre_position, 7)
+            if bidon is not None:
+                return 'X' + bidon
+
+        if objet_proche is not None:
+            return 'X' + objet_proche
+
+        return 'X' + random.choice("NOES")
+        
+    elif reserve < 6:
+        bidon = trouver_direction_bidon(le_plateau, notre_position, 2)
+        if bidon is not None:
+            return 'X' + bidon
+        elif ma_case_proche is not None:
+            directions_autour = plateau.directions_possibles(le_plateau, ma_case_proche)
+            if ma_couleur in directions_autour.values():
+                return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+        else:
+            directions_autour = plateau.directions_possibles(le_plateau, notre_position)
+            choix = random.choice(directions_autour)
+            return choix + choix
+        
+    elif objet_actuel != plateau.case.const.AUCUN:
+        # Si on a le pistolet :
         if objet_actuel == plateau.case.const.PISTOLET:
+            # Et que sa durée est à plus de 1 :
             if joueur.get_duree(les_joueurs[ma_couleur]) > 1:
+                # On essaie de trouver des murs à peindre
                 peinture_possible = directions_murs(le_plateau, notre_position)
+                # S'il n'y a pas de murs on peint
                 if len(peinture_possible) == 0:
                     peinture = 'X'
                 else:
+                    # Sinon on peint un des murs autour de nous
                     peinture = random.choice(peinture_possible)
+                
+                # On regarde nos déplacement possibles
                 deplacement_possible = plateau.directions_possibles(le_plateau, notre_position)
                 deplacement = ""
+                # Si la case est de notre couleur on l'ajoute à deplacement
                 for dir in deplacement_possible:
                     if deplacement_possible[dir] == ma_couleur:
                         deplacement += dir
+
+                # Si deplacement est vide il n'y a pas de case de notre couleur à côté donc on se dirige vers nos cases de couleurs plus loin
                 if len(deplacement) == 0:
-                    for dir in deplacement_possible:
-                        if deplacement_possible[dir] != ma_couleur:
-                            deplacement += dir
+                    deplacement = trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+                # Si c'est toujours vide, on est à 0 de surface donc on se déplace aléatoirement
                 if len(deplacement) == 0:
                     deplacement = 'NSOE'
-                else:
-                    deplacement = random.choice(deplacement)
+                deplacement = random.choice(deplacement)
                 return peinture+deplacement
             else:
+                # Si le pistolet à une durer de 1 tour
                 direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
-                peinture_possible = plateau.directions_possibles(le_plateau, notre_position)
-                if len(peinture_possible) == 0:
-                    peinture = 'X'
-                else:
-                    peinture = ""
-                    for peint in peinture_possible:
-                        peinture += peint
 
-                    if len(peinture) == 0:
-                        peinture = "NOES"
-                    peinture = random.choice(peinture)
+                # peinture_possible = plateau.directions_possibles(le_plateau, notre_position)
+                # if len(peinture_possible) == 0:
+                #     peinture = 'X'
+                # else:
+                #     peinture = ""
+                #     for peint in peinture_possible:
+                #         peinture += peint
+
+                #     if len(peinture) == 0:
+                #         peinture = "NOES"
+                #     peinture = random.choice(peinture)
 
 
-                ligne, colonne = plateau.INC_DIRECTION[direction]
-                nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
-                if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
-                    peinture = direction
+                # ligne, colonne = plateau.INC_DIRECTION[direction]
+                # nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
+                # if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
+                #     peinture = direction
+
+                # On tire la où on se déplace (forcément, sauf si notre réserve est vide)
+                peinture = tir_opti(direction, notre_position, ma_couleur, le_plateau)
+
+                if peinture == 'X':
+                    peinture = random.choice('NOSE')
+
                 return peinture + direction
-        elif objet_actuel == plateau.case.const.BOMBE:
-            if joueur.get_duree(les_joueurs[ma_couleur]) > 1:
-                directions_possibles = plateau.directions_possibles(le_plateau, notre_position)
-                directions = ""
-                for direction, couleur in directions_possibles.items():
-                    if couleur != ma_couleur:
-                        directions += direction
-                
-                if len(directions) > 1:
-                    return random.choice(directions)+random.choice(directions)
-                else:
-                    directions = ""
-                    for direction, couleur in directions_possibles.items():
-                        if couleur == ma_couleur:
-                            directions += direction
-                    if len(directions) == 0:
-                        directions = 'NOES'
-                    return 'X' + random.choice(directions)
-            else:
-                return random.choice('NOES') + random.choice('NOES')
 
         else:
-            return random.choice(choice_peinture)+random.choice("NOES")
-    elif joueur.get_reserve(les_joueurs[ma_couleur]) <= 0:
-        return 'X' + trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
-    elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 15:
+            # Pour les autres objet on attaque forécement
+            direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
+            direction = random.choice(direction)
+            return direction+direction
+    elif objet_proche == plateau.case.const.PISTOLET:
+        # On vise les pistolets en priorité
         direction = objet_proche
-        peinture = 'X'
-        ligne, colonne = plateau.INC_DIRECTION[direction]
-        nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
-        if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
-            peinture = direction
+        peinture = tir_opti(direction, notre_position, ma_couleur, le_plateau)
         return peinture+direction
-    elif joueur.get_reserve(les_joueurs[ma_couleur]) > 10:
+    elif objet_proche != None and joueur.get_reserve(les_joueurs[ma_couleur]) < 15:
+        # S'il y a un objet et on a une bonne réserve on y va
+        direction = objet_proche
+        peinture = tir_opti(direction, notre_position, ma_couleur, le_plateau)
+        return peinture+direction
+    elif joueur.get_reserve(les_joueurs[ma_couleur]) > 5:
+        # Si pas d'objet on attaque
         direction = trouver_direction_autre_couleur(le_plateau, notre_position, ma_couleur)
-        peinture = 'X'
-        ligne, colonne = plateau.INC_DIRECTION[direction]
-        nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
-        if est_sur_plateau(nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
-            peinture = direction
+        peinture = tir_opti(direction, notre_position, ma_couleur, le_plateau)
         return peinture+direction
     else:
-        return random.choice(choice_peinture)+random.choice("NOES")
+        # Si aucune condition n'est valide
+        direction = trouver_direction_recharge(le_plateau, notre_position, ma_couleur)
+        peinture = tir_opti(direction, notre_position, ma_couleur, le_plateau)
+        return peinture+direction
 
+
+
+def tir_opti(direction, notre_position, ma_couleur, le_plateau):
+    peinture = 'X'
+    ligne, colonne = plateau.INC_DIRECTION[direction]
+    nouvelle_pos = (notre_position[0] + ligne, notre_position[1] + colonne)
+    if est_sur_plateau(le_plateau, nouvelle_pos) and case.get_couleur(plateau.get_case(le_plateau, nouvelle_pos)) != ma_couleur:
+        peinture = direction
+    return peinture
 
 
 def directions_murs(le_plateau,pos):
@@ -183,7 +196,7 @@ def directions_murs(le_plateau,pos):
 
 
 
-def est_sur_plateau(pos):
+def est_sur_plateau(le_plateau, pos):
     try:
         plateau.get_case(le_plateau, pos)
         return True
@@ -191,7 +204,7 @@ def est_sur_plateau(pos):
         return False
 
 
-def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
+def trouver_direction_objet(le_plateau, pos_depart):
     file_attente = [pos_depart]
 
     predecesseurs = {pos_depart: (None, 0)}
@@ -220,9 +233,7 @@ def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
         for d_l, d_c in plateau.INC_DIRECTION.values():
             voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
 
-            if (0 <= voisin[0] < nb_lignes and 
-                0 <= voisin[1] < nb_cols and 
-                voisin not in predecesseurs):
+            if (0 <= voisin[0] < nb_lignes and 0 <= voisin[1] < nb_cols and voisin not in predecesseurs):
 
                 case_voisine = plateau.get_case(le_plateau, voisin)
                 if not case.est_mur(case_voisine):
@@ -231,16 +242,19 @@ def trouver_direction_objet(le_plateau, pos_depart, portee_max=7):
 
     return None
 
-def trouver_direction_bidon(le_plateau, pos_depart):
-    file_attente = [pos_depart]
-
+def trouver_direction_bidon(le_plateau, pos_depart, portee_max):
+    file_attente = [(pos_depart, 0)]
     predecesseurs = {pos_depart: None}
 
     nb_lignes = plateau.get_nb_lignes(le_plateau)
     nb_cols = plateau.get_nb_colonnes(le_plateau)
 
     while len(file_attente) != 0:
-        pos_courante = file_attente.pop(0)
+        pos_courante, dist = file_attente.pop(0)
+
+        if dist > portee_max:
+            continue
+
         la_case = plateau.get_case(le_plateau, pos_courante)
 
         if pos_courante != pos_depart and case.get_objet(la_case) == plateau.case.const.BIDON:
@@ -260,14 +274,12 @@ def trouver_direction_bidon(le_plateau, pos_depart):
         for d_l, d_c in plateau.INC_DIRECTION.values():
             voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
 
-            if (0 <= voisin[0] < nb_lignes and 
-                0 <= voisin[1] < nb_cols and 
-                voisin not in predecesseurs):
+            if (0 <= voisin[0] < nb_lignes and 0 <= voisin[1] < nb_cols and voisin not in predecesseurs):
 
                 case_voisine = plateau.get_case(le_plateau, voisin)
                 if not case.est_mur(case_voisine):
                     predecesseurs[voisin] = pos_courante
-                    file_attente.append(voisin)
+                    file_attente.append((voisin, dist + 1))
 
     return None
 
@@ -351,6 +363,41 @@ def trouver_direction_autre_couleur(le_plateau, pos_depart, ma_couleur):
                     file_attente.append(voisin)
 
     return random.choice("NSEO")
+
+#def position_ma_case_plus_proche(plateau, position_depart, couleur):
+    #return
+
+def position_ma_case_plus_proche(le_plateau, position_depart, ma_couleur):
+    file_attente = [position_depart]
+    predecesseurs = {position_depart: None}
+
+    nb_lignes = plateau.get_nb_lignes(le_plateau)
+    nb_cols = plateau.get_nb_colonnes(le_plateau)
+
+    while len(file_attente) != 0:
+        pos_courante = file_attente.pop(0)
+        la_case = plateau.get_case(le_plateau, pos_courante)
+
+        # On cherche une case de NOTRE couleur (sauf la case de départ)
+        if pos_courante != position_depart and case.get_couleur(la_case) == ma_couleur:
+            return pos_courante   # <-- ON RENVOIE DIRECTEMENT LA POSITION
+
+        # Explorer les voisins
+        for d_l, d_c in plateau.INC_DIRECTION.values():
+            voisin = (pos_courante[0] + d_l, pos_courante[1] + d_c)
+
+            if (0 <= voisin[0] < nb_lignes and
+                0 <= voisin[1] < nb_cols and
+                voisin not in predecesseurs):
+
+                case_voisine = plateau.get_case(le_plateau, voisin)
+
+                if not case.est_mur(case_voisine):
+                    predecesseurs[voisin] = pos_courante
+                    file_attente.append(voisin)
+
+    # Si aucune case à nous n'est trouvée
+    return None
 
 
 if __name__=="__main__":
